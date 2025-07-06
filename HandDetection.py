@@ -25,10 +25,11 @@ class handDetection:
 
         # Membuat objek `Hands` dari mediapipe dengan parameter yang telah ditentukan
         self.hands = self.mphands.Hands(
-            static_image_mode=self.static_mode,
-            max_num_hands=self.maxhands,
-            min_detection_confidence=self.detection_confident,
-            min_tracking_confidence=self.tracking_confident)
+            static_image_mode=self.static_mode,                # mode gambar statis atau video
+            max_num_hands=self.maxhands,                      # jumlah maksimum tangan yang ingin dideteksi
+            min_detection_confidence=self.detection_confident,  # kepercayaan minimum untuk deteksi awal
+            min_tracking_confidence=self.tracking_confident     # kepercayaan minimum untuk pelacakan
+        )
 
         # Menyimpan referensi ke modul untuk menggambar landmark tangan di atas gambar
         self.mpdraw = drawing_utils
@@ -52,18 +53,30 @@ class handDetection:
         # Mengembalikan frame yang sudah diproses (dengan atau tanpa landmark tergantung parameter)
         return frame
 
+    # Fungsi untuk mendapatkan lokasi titik-titik (landmark) dari tangan yang terdeteksi
     def getHandLocation(self, frame, handNo:int = 0, draw: bool = True):
+        # Membuat list kosong untuk menyimpan data landmark [id, x, y]
         lmList = []
 
+        # Mengecek apakah ada tangan yang terdeteksi
         if self.results.multi_hand_landmarks:
+            # Mengambil data landmark dari tangan ke-berapa (default: tangan pertama)
             myHand = self.results.multi_hand_landmarks[handNo]
-            for idx,lm in enumerate(myHand.landmark):
-                    
-                h,w,c = frame.shape
-                cx,cy = int(lm.x*w), int(lm.y*h)
-                lmList.append([idx,cx,cy])
-                    
-                if draw:
-                    cv2.circle(frame, (cx,cy), 5, (255,0,255), cv2.FILLED)
 
-        return lmList 
+            # Melakukan loop ke semua titik landmark pada tangan
+            for idx, lm in enumerate(myHand.landmark):
+                # Mendapatkan ukuran frame (tinggi, lebar, dan jumlah kanal warna)
+                h, w, c = frame.shape
+
+                # Mengubah koordinat normalisasi (0-1) menjadi piksel
+                cx, cy = int(lm.x * w), int(lm.y * h)
+
+                # Menyimpan id titik serta posisi x dan y dalam list
+                lmList.append([idx, cx, cy])
+
+                # Jika parameter draw = True, gambar lingkaran kecil di titik tersebut
+                if draw:
+                    cv2.circle(frame, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
+
+        # Mengembalikan list dari semua landmark dalam bentuk: [id, x, y]
+        return lmList
