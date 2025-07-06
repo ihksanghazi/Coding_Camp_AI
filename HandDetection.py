@@ -51,3 +51,19 @@ class handDetection:
 
         # Mengembalikan frame yang sudah diproses (dengan atau tanpa landmark tergantung parameter)
         return frame
+
+    def getHandLocation(self, frame, handNo:int = 0, draw: bool = True):
+        lmList = []
+
+        if self.results.multi_hand_landmarks:
+            myHand = self.results.multi_hand_landmarks[handNo]
+            for idx,lm in enumerate(myHand.landmark):
+                    
+                h,w,c = frame.shape
+                cx,cy = int(lm.x*w), int(lm.y*h)
+                lmList.append([idx,cx,cy])
+                    
+                if draw:
+                    cv2.circle(frame, (cx,cy), 5, (255,0,255), cv2.FILLED)
+
+        return lmList 
